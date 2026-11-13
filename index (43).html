@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TEPillion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0920; --panel:#181238; --panel2:#221a4a; --edge:#3a2d78; --ink:#f3eefe; --muted:#a79fd0;
+  --accent:#9b6bff; --accent2:#6b3fe0; --gold:#ffcc33; --red:#ff5468;
+  --t0:#3a3350; --t1:#cfc8e0; --t2:#5fa8ff; --t3:#b48cff; --t4:#7a3fe0; --t5:#ffcc33;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink)}
+body{font-family:"VT323",monospace;font-size:22px;line-height:1.15;
+  background:
+    radial-gradient(circle at 50% -10%, #2a1d63 0, transparent 55%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.025) 0 2px, transparent 2px 4px),
+    var(--bg);
+  min-height:100vh}
+.px{font-family:"Press Start 2P",monospace;letter-spacing:0;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding:18px 14px 40px}
+header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px}
+.logo{font-family:"Press Start 2P",monospace;font-size:22px;color:var(--ink);text-shadow:3px 3px 0 var(--accent2),6px 6px 0 #000}
+.logo span{color:var(--gold)}
+.date{font-family:"Press Start 2P",monospace;font-size:9px;color:var(--muted);text-align:right;line-height:1.7}
+.panel{background:var(--panel);border:4px solid var(--edge);box-shadow:6px 6px 0 #000;padding:18px;margin-bottom:16px;position:relative}
+.panel.flush{padding:0}
+h1{font-family:"Press Start 2P",monospace;font-size:15px;line-height:1.6;margin:0 0 12px}
+h2{font-family:"Press Start 2P",monospace;font-size:12px;margin:0 0 12px;color:var(--gold)}
+.lbl{font-family:"Press Start 2P",monospace;font-size:9px;color:var(--muted);margin-bottom:10px;letter-spacing:.05em}
+p{margin:0 0 10px}
+.muted{color:var(--muted)}
+.small{font-size:19px}
+button{font-family:"Press Start 2P",monospace;font-size:12px;cursor:pointer;border:0;padding:14px 16px;background:var(--accent);color:#120c2c;
+  box-shadow:inset -4px -4px 0 var(--accent2), 4px 4px 0 #000;transition:transform .05s}
+button:active{transform:translate(3px,3px);box-shadow:inset -4px -4px 0 var(--accent2), 1px 1px 0 #000}
+button.gold{background:var(--gold);box-shadow:inset -4px -4px 0 #c78a00, 4px 4px 0 #000}
+button.ghost{background:var(--panel2);color:var(--ink);box-shadow:inset -4px -4px 0 #120c2c, 4px 4px 0 #000}
+button.link{background:none;box-shadow:none;color:var(--muted);font-size:9px;padding:8px}
+.row{display:flex;gap:12px;align-items:center}
+.grow{flex:1}
+.full{width:100%}
+.blink{animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* scene */
+.scene{position:relative;background:#000;border-bottom:4px solid var(--edge)}
+.scene canvas{display:block;width:100%;height:auto;image-rendering:pixelated;image-rendering:crisp-edges}
+.scene .ov-room{position:absolute;left:8px;top:8px;font-family:"Press Start 2P",monospace;font-size:9px;color:#fff;background:rgba(10,7,24,.75);padding:5px 7px;box-shadow:2px 2px 0 #000}
+.scene .ov-score{position:absolute;right:8px;top:8px;font-family:"Press Start 2P",monospace;font-size:12px;color:var(--gold);background:rgba(10,7,24,.75);padding:5px 7px;box-shadow:2px 2px 0 #000}
+.ov-banner{position:absolute;left:0;right:0;top:38%;text-align:center;font-family:"Press Start 2P",monospace;font-size:14px;color:var(--gold);text-shadow:3px 3px 0 #000,-1px -1px 0 #000;opacity:0;pointer-events:none}
+.ov-banner small{display:block;font-size:8px;color:#fff;margin-bottom:6px}
+.ov-banner.show{animation:banner 1.9s steps(12) forwards}
+@keyframes banner{0%{opacity:0;transform:translateY(8px)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-6px)}}
+.ov-float{position:absolute;left:0;right:0;top:46%;text-align:center;font-family:"Press Start 2P",monospace;font-size:22px;color:var(--gold);text-shadow:3px 3px 0 #000;opacity:0;pointer-events:none}
+.ov-float.bad{color:var(--red);font-size:14px}
+.ov-float.show{animation:floatup 1.3s steps(10) forwards}
+@keyframes floatup{0%{opacity:0;transform:translateY(10px) scale(.8)}15%{opacity:1;transform:none}70%{opacity:1}100%{opacity:0;transform:translateY(-26px)}}
+.tries{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;min-height:10px}
+.tries span{font-size:20px;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--red);background:#0a0718;padding:0 6px}
+.nope{font-family:"Press Start 2P",monospace;font-size:9px;color:var(--red);margin-top:10px;min-height:14px}
+.where{display:flex;justify-content:space-between;gap:8px;padding:10px 12px;background:#0a0718;font-family:"Press Start 2P",monospace;font-size:9px;line-height:1.6}
+.where .here{color:var(--gold)}
+.where .next{color:var(--muted);text-align:right}
+.hud{display:flex;justify-content:space-between;align-items:center;padding:10px 12px;background:#0a0718;border-bottom:4px solid var(--edge);font-family:"Press Start 2P",monospace;font-size:10px}
+.hud .score{color:var(--gold)}
+.body{padding:18px}
+
+.tiers{display:grid;gap:8px;margin:14px 0 6px}
+.tier{display:flex;align-items:center;gap:10px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 8px;font-family:"Press Start 2P",monospace;font-size:8px;line-height:1.3;white-space:nowrap;box-shadow:3px 3px 0 #000}
+.c0{background:var(--t0);color:#fff}
+.c1{background:var(--t1);color:#1b1530}
+.c2{background:var(--t2);color:#06183a}
+.c3{background:var(--t3);color:#1b0a40}
+.c4{background:var(--t4);color:#fff}
+.c5{background:var(--t5);color:#2a1b00}
+.pts{margin-left:auto;font-family:"Press Start 2P",monospace;font-size:9px;color:var(--muted)}
+.cat{display:inline-block;background:var(--gold);color:#1b1100;font-family:"Press Start 2P",monospace;font-size:9px;padding:6px 8px;margin-bottom:12px;box-shadow:3px 3px 0 #000}
+.prompt{font-family:"Press Start 2P",monospace;font-size:16px;line-height:1.6;margin:4px 0 14px}
+.timer{height:14px;background:#0a0718;border:3px solid var(--edge);margin:0 0 14px;position:relative}
+.timer b{display:block;height:100%;background:repeating-linear-gradient(90deg,var(--accent) 0 8px,var(--accent2) 8px 10px);width:100%}
+.timer.low b{background:repeating-linear-gradient(90deg,var(--red) 0 8px,#b0263a 8px 10px)}
+.secs{font-family:"Press Start 2P",monospace;font-size:10px;color:var(--muted)}
+input[type=text]{width:100%;font-family:"VT323",monospace;font-size:30px;padding:10px 12px;border:4px solid var(--edge);background:#0a0718;color:var(--ink);outline:none;border-radius:0;caret-color:var(--gold)}
+input[type=text]:focus{border-color:var(--accent)}
+input::placeholder{color:#5a5188}
+.verdict{text-align:center;padding:6px 0 2px}
+.verdict .chip{font-size:10px;padding:9px 12px}
+.gain{font-family:"Press Start 2P",monospace;font-size:30px;color:var(--gold);margin:16px 0 8px;text-shadow:3px 3px 0 #000}
+.answer{font-size:30px;margin-top:4px}
+.sheet{font-size:19px;color:var(--muted);margin-top:10px}
+.big{font-family:"Press Start 2P",monospace;font-size:34px;color:var(--gold);text-shadow:4px 4px 0 #000;margin:4px 0 8px}
+.big small{font-size:12px;color:var(--muted);text-shadow:none}
+.grid{font-size:28px;letter-spacing:4px;margin:6px 0 14px}
+textarea.share{width:100%;font-family:"VT323",monospace;font-size:22px;border:3px solid var(--edge);padding:8px;background:#0a0718;color:var(--ink);resize:none;display:none;margin-top:10px}
+.res{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-top:3px dashed var(--edge)}
+.res:first-child{border-top:0;padding-top:0}
+.res.click{cursor:pointer}
+.res.click:hover .toggle,.res.click:focus .toggle{color:var(--gold)}
+.res.click:focus{outline:2px dashed var(--accent);outline-offset:4px}
+.toggle{font-family:"Press Start 2P",monospace;font-size:8px;color:var(--accent);margin-top:8px}
+.fullsheet{background:#0a0718;border:3px solid var(--edge);padding:12px;margin:0 0 12px;display:grid;gap:12px}
+.ftier .chip{margin-bottom:6px}
+.fans{display:flex;flex-wrap:wrap;gap:6px;font-size:20px}
+.fans span,.fans .mine{background:var(--panel2);padding:1px 7px;box-shadow:2px 2px 0 #000;font-weight:normal}
+.fans .mine{background:var(--gold);color:#1b1100}
+.res .q{font-size:18px;color:var(--muted)}
+.res .a{font-size:24px}
+.res .also{font-size:17px;color:var(--accent)}
+.brow{display:flex;align-items:center;gap:10px;padding:7px 0;border-top:3px dashed var(--edge)}
+.brow:first-child{border-top:0}
+.brow .rank{width:30px;font-family:"Press Start 2P",monospace;font-size:10px;color:var(--muted)}
+.brow:nth-child(1) .rank{color:var(--gold)}
+.brow .who{flex:1;min-width:0;display:flex;flex-direction:column}
+.brow .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:24px}
+.brow .sc{font-family:"Press Start 2P",monospace;font-size:11px;color:var(--gold)}
+.brow.me .nm{color:var(--accent)}
+.brow .mini{font-size:15px;letter-spacing:1px}
+.brow.click{cursor:pointer}
+.brow.click:hover .nm{color:var(--gold)}
+.brow.click:focus{outline:2px dashed var(--accent);outline-offset:3px}
+.brow .caret{display:block;font-size:8px;color:var(--accent);text-align:right;margin-top:4px}
+.theirs{background:#0a0718;border:3px solid var(--edge);padding:6px 12px;margin:0 0 10px}
+.trow{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-top:2px dashed var(--edge)}
+.trow:first-child{border-top:0}
+.trow .q{font-size:16px;color:var(--muted)}
+.trow .a{font-size:22px}
+.nameform{background:#0a0718;border:3px solid var(--gold);padding:12px;margin-bottom:14px}
+.nameform p{margin-bottom:8px}
+.pop-wrap{position:fixed;inset:0;background:rgba(6,4,16,.82);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.pop-card{width:100%;max-width:480px;max-height:88vh;overflow:auto;border-color:var(--gold);margin:0}
+.sched{border-top:3px dashed var(--edge);padding:10px 0}
+.sched:first-child{border-top:0}
+footer{text-align:center;color:var(--muted);font-family:"Press Start 2P",monospace;font-size:8px;line-height:1.8;margin-top:18px}
+.shake{animation:shake .25s steps(4)}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.pop{animation:pop .25s steps(4)}
+@keyframes pop{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+@media (max-width:420px){ .logo{font-size:17px} .prompt{font-size:14px} h1{font-size:13px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">TEP<span>illion</span></div>
+    <div class="date" id="hdrDate"></div>
+  </header>
+  <main id="app"></main>
+  <footer>ΤΕΦ · NEW SET EVERY DAY AT MIDNIGHT ET<br>INSPIRED BY KRILLION.IO</footer>
+</div>
+
+<!--
+  ===================== QUESTION BANK =====================
+  Format, one question per block:
+
+  [Category] The prompt
+  1: most obvious answers, separated by commas
+  2: ...
+  3: ...
+  4: ...
+  5: rarest answers
+  Use / or (parentheses) for other names that count as the same answer:
+     Jake Drykerman (Dryks)
+  Add |names after the category for questions about people, so a first
+  or last name alone also counts:  [Pledge Classes|names] Name a ...
+  Don't use commas inside an answer. Lines starting with # are ignored.
+  Answers not on the list score 0.
+  ==========================================================
+-->
+<script type="text/plain" id="bank">
+# Tiers: 5 = One in a TEPillion, 4 = Legacy, 3 = E-Board, 2 = Brother, 1 = Pledge
+# |names = a first or last name alone also counts. (Parentheses) = other names that count.
+
+[Hookups|names] Name a Zahl/Remi/Rae hookup
+5: Logan Fischer
+4: Josh Horwitz, Carson Bell
+3: Ben Surasky, Alex Tovin, Ralph Liniado, Josh Gershon
+2: Joey Neustadt, Jordan Yagaloff, Andrew Rhodes
+1: Salo Szumstein, Daniel Ostrager, Jake Maneri
+
+[Pledge Classes|names] Name any brother from PC'21 (Barish PC)
+5: Lucas Jannett
+4: Idan Tzurdecker, Jake Friedman, Gary Schwartz
+3: Ryan Winston, Nate Koenick, Brett Nemec, Ethan Engel
+2: Chase Flagel, Elijah Kasten, Noah Chen, Brandon Sherman, Alex Tovin, Michael Parnes
+1: Ryan Barish, Matt Rosenberg, Zeke Hert
+
+[Homefriends|names] Name a PC'22 homefriend
+5: Giacomo Calamita (Italy)
+4: Ava Londa, Sydney Frank, Matty Kellner, Bradley Gordon, Jason Busch, Tyler Stern (Sternshow), Max Selver, Hunter Zuckerman, Jaron Holzer, Jay Bhanot
+3: Big Adam, Ike Wachter, Spencer Newman, Ben Kreit (Krizz), Mason Herman, Mason Garvey, Brody Girsky, Danilo Viciana, Jake Shukan, Chris Sayuk, Jonathan Merlin, Max Pargman, Logan Bucovetsky, Jarv, Brett Halpern, Jake Roth
+2: Brandon Sobel, Max Leibowitz, Tyler Leest, Max Silver, Ethan Bassuk, Jake Einzig, Alex Weissman, Andrew Mayer, Sam Lipskin, Kyle and Bo (Kyle & Bo), Dylan Slater, Dylan Taylor
+1: Jace Nadboy, Noah Schnapp, Ari Gabay, Jack Jarashow, Eli Zeiger, Jake Erlich, Hunter Scott, Gabriel Kadoori, Eitan Pritzker, Nate Artzi, Seth Meiselman, Matthew Richmond, Jacob Mirsky, Brandon Doyne, Jake Drykerman (Dryks)
+
+[Socials] Name a TEP date night, party, or social theme
+5: Gym Bros and Yoga Hoes (Gym Bros & Yoga Hoes)
+4: Hometown Throwdown, TEP Gala (Gala), Risky Business, Old Money
+3: Tepapalooza, Margaritaville, Toga, Woodstock, Grafitti (Graffiti)
+2: Blackout, Bar Mitzvah, Concrete Jungle, Dynamic Duos, Jerseys, White Lies
+1: Rodeo, White Party, Semi Attire, Link and Drink (Masters / Link and Drink Masters), Rhyme Without Reason
+
+[TEP Songs] Name a TEP song
+5: Like I'm Dryks Now
+4: Hanukkah Mahanukkah, On Date Night, Brod's Dead, Ms Bern (Ms. Bern), Pumpkin Pie, 2EZ (2 EZ), TopShottaTypeShit (Top Shotta Type Shit)
+3: GBFU, Wanted Tung, Kip's Bi, Buford Highway, JC Earring
+2: Sussman's Mom, Kandy Kane, Muck Now Grub Later
+1: Family TEP's (Family TEPs), Winston Tramp Stamp, Fuck Shower, Me Llamo Squeeze Rock, All I Want for Squeezemas, Chippers Hits, Batch, Fade P, Walka Betza
+
+[Nicknames] Name a TEP nickname from PC'22
+5: Socks
+4: Gramps, Rod
+3: Duss, Nutsack, Tubby, Shtein, Burd, Mander, TKB
+2: Hoodbird, Jubbers, Chime, Gslime, Dero, Maha, Hengel
+1: Hirsch, JC, Ozzy, Warsh, Dank, Jizz, Grinny, Carbell, Muck, Kip, Squeeze, Gally, Yags, AP, Shoop
+
+[Sayings] Name a TEP saying, phrase, or word
+5: Yow City
+4: BLFR, GLFR
+3: Grubski McDaniels, Boom its JC (Boom it's JC), Ruha, Lance, Gibbs
+2: Bip, She Poops (Pewps / She Pewps), Sorry Retarded, To the Face, Saucin Nans, Good to Suck, Tits
+1: Bop, Burd, Muck, Grub, Gaf, Owwww (Ow / Oww / Owww)
+</script>
+
+
+<script>
+(function(){
+"use strict";
+
+/* ---------- config ---------- */
+const PER_DAY = 7, SECS = 25, EPOCH = "2026-11-12", TZ = "America/New_York";
+
+/* ===================== LEADERBOARD SETTINGS (Firebase) =====================
+   Paste your Firebase web app's apiKey and projectId between the quotes.
+   Leave them empty and the game still works, just without a leaderboard.   */
+const FIREBASE = { apiKey: "AIzaSyCFU7lEeHu08iBAEH638YWchrnUaS1f8FI", projectId: "tepillion" };
+/* ========================================================================== */
+const STANDALONE = (() => { try { return window.self === window.top; } catch(e){ return false; } })();
+const FB_ON = STANDALONE && !!FIREBASE.apiKey && !!FIREBASE.projectId;
+const TIERS = [
+  {n:0, name:"Time's up", pts:0,   emoji:"⬛"},
+  {n:1, name:"Pledge",           pts:10,  emoji:"⬜"},
+  {n:2, name:"Brother",          pts:30,  emoji:"🟦"},
+  {n:3, name:"E-Board",          pts:60,  emoji:"🟪"},
+  {n:4, name:"Legacy",           pts:85,  emoji:"💜"},
+  {n:5, name:"One in a TEPillion", pts:100, emoji:"👑"}
+];
+let MAX = PER_DAY * 100;
+
+/* ---------- helpers ---------- */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function hashStr(s){ let h = 2166136261; for (let i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function todayET(){ return new Intl.DateTimeFormat("en-CA",{timeZone:TZ,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
+function dayIndex(date){ return Math.round((Date.parse(date+"T12:00:00Z") - Date.parse(EPOCH+"T12:00:00Z")) / 864e5); }
+function niceDate(date){ return new Date(date+"T12:00:00Z").toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric",timeZone:"UTC"}); }
+function addDays(date, n){ const d = new Date(date+"T12:00:00Z"); d.setUTCDate(d.getUTCDate()+n); return d.toISOString().slice(0,10); }
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
+  set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+};
+
+/* ---------- matching ---------- */
+function norm(s){
+  return String(s).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")
+    .replace(/&/g,"and").replace(/^\s*the\s+/,"").replace(/[^a-z0-9]/g,"");
+}
+function lev(a,b){
+  const m=a.length,n=b.length; let prev=Array.from({length:n+1},(_,j)=>j);
+  for (let i=1;i<=m;i++){ const cur=[i]; for (let j=1;j<=n;j++){ cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1)); } prev=cur; }
+  return prev[n];
+}
+/* ---------- bank ---------- */
+function splitTop(str){ // split on commas that aren't inside parentheses
+  const out = []; let depth = 0, cur = "";
+  for (const ch of str){ if (ch === "(") depth++; if (ch === ")") depth = Math.max(0, depth-1); if (ch === "," && !depth){ out.push(cur); cur = ""; } else cur += ch; }
+  out.push(cur); return out.map(s => s.trim()).filter(Boolean);
+}
+function parseBank(txt){
+  const qs = []; let cur = null;
+  for (const raw of txt.split("\n")){
+    const line = raw.trim();
+    if (!line || line.startsWith("#")) continue;
+    let m = line.match(/^\[(.+?)\]\s*(.+)$/);
+    if (m){
+      const parts = m[1].split("|").map(s => s.trim());
+      cur = {cat:parts[0], prompt:m[2].trim(), names: parts.slice(1).some(f => /^names?$/i.test(f)), answers:[]};
+      qs.push(cur); continue;
+    }
+    m = line.match(/^([1-5])\s*:\s*(.+)$/);
+    if (m && cur){
+      for (const item of splitTop(m[2])){
+        const paren = [...item.matchAll(/\(([^)]*)\)/g)].flatMap(x => x[1].split("/")).map(s => s.trim()).filter(Boolean);
+        const names = item.replace(/\([^)]*\)/g, "").split("/").map(s => s.trim()).filter(Boolean);
+        if (!names.length) continue;
+        const aliases = names.concat(paren).map(a => ({t:norm(a), part:false}));
+        if (cur.names) for (const nm of names){
+          const w = nm.split(/\s+/).filter(Boolean);
+          if (w.length >= 2){ aliases.push({t:norm(w[0]), part:true}); aliases.push({t:norm(w[w.length-1]), part:true}); }
+        }
+        cur.answers.push({display:names[0], note:paren.join(" / "), aliases:aliases.filter(a => a.t), tier:+m[1]});
+      }
+    }
+  }
+  return qs.filter(q => q.answers.length);
+}
+const BANK = parseBank(document.getElementById("bank").textContent);
+
+const permCache = {};
+function perm(cycle){
+  if (permCache[cycle]) return permCache[cycle];
+  const r = mulberry32(hashStr("tepillion:" + cycle)), a = [...Array(BANK.length).keys()];
+  for (let i=a.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
+  return permCache[cycle] = a;
+}
+function questionsFor(date){
+  const N = BANK.length; if (!N) return [];
+  const k = Math.min(PER_DAY, N), out = [], seen = new Set();
+  let pos = Math.max(0, dayIndex(date)) * PER_DAY;
+  while (out.length < k){
+    const idx = perm(Math.floor(pos / N))[pos % N]; pos++;
+    if (!seen.has(idx)){ seen.add(idx); out.push(BANK[idx]); }
+  }
+  return out;
+}
+
+// Returns the matched answer, {amb:[...]} when a single name fits several people, or null.
+function match(q, input){
+  const n = norm(input); if (!n) return null;
+  let bd = 99, hits = [];
+  for (const a of q.answers) for (const al of a.aliases){
+    const t = al.t; let d;
+    if (t === n || t === n.replace(/s$/,"") || n === t.replace(/s$/,"") || t === n.replace(/es$/,"")) d = 0;
+    else {
+      const tol = t.length >= 5 ? 2 : t.length >= 3 ? 1 : 0;   // 1-2 letters of slack
+      if (!tol || Math.abs(t.length - n.length) > tol) continue;
+      d = lev(t, n); if (d > tol) continue;
+    }
+    if (d < bd){ bd = d; hits = [a]; } else if (d === bd && !hits.includes(a)) hits.push(a);
+  }
+  if (!hits.length) return null;
+  if (hits.length === 1) return hits[0];
+  return {amb: hits};
+}
+
+/* =====================================================================
+   SIDE-SCROLLING FRAT HOUSE  (world 840x216, camera view 128x80, crisp)
+   Outside -> Basketball Court -> House Dad Room -> Sweetheart Room ->
+   Alumni Room -> (stairs down) Basement -> (stairs down) Rat Room
+   ===================================================================== */
+const VW = 128, VH = 80, WW = 840, WH = 216;
+const PATH = [
+  {s:0,   x:16,  y:69,  room:"Outside"},
+  {s:60,  x:126, y:69,  room:"Basketball Court"},
+  {s:160, x:258, y:69,  room:"House Dad Room"},
+  {s:270, x:374, y:69,  room:"Sweetheart Room"},
+  {s:380, x:490, y:69,  room:"Alumni Room"},
+  {s:440, x:560, y:69},
+  {s:490, x:612, y:133, room:"Basement"},
+  {s:570, x:704, y:133},
+  {s:600, x:748, y:197, room:"Rat Room"},
+  {s:700, x:800, y:197}
+];
+const ROOMS = PATH.filter(p => p.room);
+// Path is laid out on a 0..700 depth scale; a day's max score maps onto it.
+const DEP = score => Math.max(0, Math.min(700, score * 700 / MAX));
+function roomAt(score){ const d = DEP(score) + 1e-6; let r = ROOMS[0]; for (const p of ROOMS) if (d >= p.s) r = p; return r; }
+function nextRoom(score){ const d = DEP(score) + 1e-6; return ROOMS.find(p => p.s > d) || null; }
+const roomPts = p => Math.ceil(p.s * MAX / 700);
+function posAt(score){
+  score = DEP(score);
+  for (let i=1;i<PATH.length;i++){
+    const a = PATH[i-1], b = PATH[i];
+    if (score <= b.s){ const t = (score - a.s) / (b.s - a.s || 1); return {x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t}; }
+  }
+  const l = PATH[PATH.length-1]; return {x:l.x, y:l.y};
+}
+
+function rect(c, col, x, y, w, h){ c.fillStyle = col; c.fillRect(x, y, w, h); }
+function glyph(c, col, rows, x, y){ rows.forEach((r,j)=>{ for (let i=0;i<r.length;i++) if (r[i]==="1") rect(c,col,x+i,y+j,1,1); }); }
+const G_T = ["111","010","010","010","010"], G_E = ["111","100","110","100","111"], G_PHI = ["00100","01110","10101","01110","00100"];
+const HEART = ["1010","1111","0110"];
+function tep(c, col, x, y){ glyph(c,col,G_T,x,y); glyph(c,col,G_E,x+5,y); glyph(c,col,G_PHI,x+10,y); }
+function doorWall(c, x, top, floor, col, hi){ rect(c,col,x,top,3,floor-22-top); rect(c,hi,x,top,1,floor-22-top); rect(c,hi,x-1,floor-23,5,1); }
+
+let WORLD = null;
+function buildWorld(){
+  const cv = document.createElement("canvas"); cv.width = WW; cv.height = WH;
+  const c = cv.getContext("2d");
+  const R = mulberry32(7);
+  // earth everywhere
+  rect(c,"#26180f",0,0,WW,WH);
+  for (let i=0;i<900;i++){ const x=Math.floor(R()*WW), y=70+Math.floor(R()*(WH-70)); rect(c, R()<.5?"#33221a":"#1c120b", x, y, R()<.2?2:1, 1); }
+  for (let i=0;i<40;i++){ const x=Math.floor(R()*WW), y=80+Math.floor(R()*(WH-80)); rect(c,"#4a3a32",x,y,3,2); rect(c,"#5c4a40",x,y,2,1); }
+
+  /* ---------- OUTSIDE (0..112) ---------- */
+  const sky = ["#0b0822","#100b2e","#151039","#1b1446","#221a55","#2a1f62"];
+  sky.forEach((col,i) => rect(c, col, 0, i*12, 116, 12));
+  for (let i=0;i<30;i++) rect(c, R()<.25?"#ffe9a8":"#b9b3e6", Math.floor(R()*104), 12+Math.floor(R()*44), 1, 1);
+  rect(c,"#fff3c4",14,18,7,7); rect(c,"#fff3c4",13,20,9,3); rect(c,"#151039",18,17,5,5);
+  // tree
+  rect(c,"#4a2e1a",36,46,4,24); rect(c,"#3a2414",36,46,1,24);
+  rect(c,"#1d5a2a",26,28,24,20); rect(c,"#246b33",28,26,18,4); rect(c,"#2e7f3e",30,30,10,6); rect(c,"#2e7f3e",40,36,6,5); rect(c,"#174a22",26,44,24,4);
+  // yard sign
+  rect(c,"#8a6a4a",86,58,1,12); rect(c,"#8a6a4a",94,58,1,12);
+  rect(c,"#e8e0f0",80,46,20,12); rect(c,"#7a3fe0",80,46,20,1); rect(c,"#7a3fe0",80,57,20,1); tep(c,"#6b3fe0",83,49);
+  // mailbox
+  rect(c,"#5a5a6a",62,58,1,12); rect(c,"#3a5ab8",58,54,9,5); rect(c,"#ff5468",66,52,1,3);
+  // grass + path
+  rect(c,"#2f8f3e",0,70,116,3); rect(c,"#1f6a2c",0,73,116,2);
+  for (let x=0;x<116;x+=3) rect(c,"#3fae4f",x,69,1,1);
+  for (let x=2;x<110;x+=7) rect(c,"#8b8199",x,70,4,1);
+  // roof overhang + house front wall with open door
+  rect(c,"#241a36",100,0,WW-100,9); for (let x=100;x<WW;x+=4) rect(c,"#33264a",x,2+((x/4)%2),3,1);
+  rect(c,"#151024",100,8,WW-100,1);
+  for (let y=9;y<70;y++){ rect(c, (Math.floor(y/3)%2) ? "#7a2f3a" : "#8a3a45", 112, y, 4, 1); }
+  rect(c,"#0f0b1e",112,46,4,24); rect(c,"#c78a2b",111,45,6,1);
+  rect(c,"#ffcc33",107,40,3,3); rect(c,"#3a2d5a",107,43,3,1);
+
+  /* ---------- GROUND FLOOR shell (116..560) ---------- */
+  rect(c,"#151024",116,9,444,2);                    // ceiling beam
+  /* ---------- BASKETBALL COURT (116..244) ---------- */
+  rect(c,"#2d2560",116,11,128,59);
+  for (let x=116;x<244;x+=8) rect(c,"#332a6c",x,11,4,59);
+  rect(c,"#5b34c7",116,52,128,3); rect(c,"#ffcc33",116,55,128,1);
+  rect(c,"#c98b4b",116,70,128,6); for (let x=116;x<244;x+=6) rect(c,"#b07a40",x,71,1,5); rect(c,"#e8d0a0",116,70,128,1); rect(c,"#7a3fe0",196,70,48,1);
+  // banner
+  rect(c,"#6b3fe0",148,16,26,11); rect(c,"#ffcc33",148,16,26,1); for (let x=148;x<174;x+=4) rect(c,"#6b3fe0",x,27,2,1); tep(c,"#ffcc33",154,19);
+  // scoreboard
+  rect(c,"#0a0a12",186,15,22,10); rect(c,"#3a3a4a",186,15,22,1);
+  glyph(c,"#ff5468",["111","101","101","101","111"],189,18); glyph(c,"#ff5468",["010","110","010","010","111"],193,18);
+  glyph(c,"#ffcc33",["111","001","111","100","111"],199,18); glyph(c,"#ffcc33",["111","001","011","001","111"],203,18);
+  // bleachers
+  for (let k=0;k<4;k++){ rect(c,"#4a4466",120,58+k*3,26-k*6,3); rect(c,"#6a6490",120,58+k*3,26-k*6,1); }
+  // hoop
+  rect(c,"#8a8aa0",238,24,2,46); rect(c,"#6a6a80",230,30,8,2);
+  rect(c,"#f2f2f8",222,20,12,14); rect(c,"#c8c8d8",222,33,12,1); rect(c,"#ff5468",225,26,6,1); rect(c,"#ff5468",225,26,1,5); rect(c,"#ff5468",230,26,1,5);
+  rect(c,"#ff8a2a",214,35,9,1);
+  for (let y=36;y<41;y++){ rect(c,"#e8e0f0",215+(y-36)%2,y,1,1); rect(c,"#e8e0f0",218,y,1,1); rect(c,"#e8e0f0",221-(y-36)%2,y,1,1); }
+  doorWall(c,244,11,70,"#4a3f78","#5c4f90");
+
+  /* ---------- HOUSE DAD ROOM (247..359) ---------- */
+  rect(c,"#2e4a3c",247,11,112,59);
+  for (let x=250;x<359;x+=10) rect(c,"#335241",x,11,1,41);
+  rect(c,"#5a3a24",247,52,112,18); rect(c,"#7a5232",247,52,112,2); for (let x=252;x<359;x+=14) rect(c,"#4a2e1a",x,55,10,12);
+  rect(c,"#7a5232",247,70,112,6); rect(c,"#946640",247,70,112,1);
+  rect(c,"#8b2a2a",258,69,62,1); for (let x=260;x<320;x+=6) rect(c,"#ffcc33",x,69,2,1);
+  // framed portrait
+  rect(c,"#c78a2b",260,20,18,16); rect(c,"#2a2040",262,22,14,12); rect(c,"#f0b98a",267,25,4,4); rect(c,"#8a8aa0",266,24,6,1); rect(c,"#3a5ab8",265,29,8,5);
+  rect(c,"#c78a2b",283,24,12,3); rect(c,"#2a2040",284,25,10,1);
+  // armchair
+  rect(c,"#8b4a35",266,48,20,9); rect(c,"#a35a42",268,49,16,2); rect(c,"#7a3b2a",264,56,24,10); rect(c,"#8b4a35",263,54,4,10); rect(c,"#8b4a35",285,54,4,10);
+  rect(c,"#3a2414",265,66,2,4); rect(c,"#3a2414",285,66,2,4);
+  rect(c,"#c8c8d8",270,69,4,1); rect(c,"#c8c8d8",276,69,4,1);
+  // side table, lamp, mug
+  rect(c,"#5a3a24",292,60,12,2); rect(c,"#4a2e1a",293,62,2,8); rect(c,"#4a2e1a",301,62,2,8);
+  rect(c,"#8a6a4a",297,46,1,14); rect(c,"#f0d080",293,40,9,6); rect(c,"#d8b860",293,45,9,1);
+  rect(c,"#f2f2f8",300,57,3,3); rect(c,"#c8c8d8",303,58,1,1);
+  // bookshelf
+  rect(c,"#4a2e1a",318,18,36,52); rect(c,"#2a1a0e",320,20,32,48);
+  const bookCols = ["#ff5468","#5fa8ff","#ffcc33","#7a3fe0","#2e7f3e","#e8e0f0","#ff8a2a"];
+  for (let sh=0; sh<4; sh++){ const y = 20+sh*12; rect(c,"#4a2e1a",320,y+10,32,2); let x=321; while (x<350){ const w = 2+Math.floor(R()*2), h = 6+Math.floor(R()*3); rect(c,bookCols[Math.floor(R()*bookCols.length)],x,y+10-h,w,h); x += w+ (R()<.2?2:0); } }
+  doorWall(c,359,11,70,"#4a3f78","#5c4f90");
+
+  /* ---------- SWEETHEART ROOM (362..474) ---------- */
+  rect(c,"#5c2a5a",362,11,112,59);
+  for (let y=15;y<50;y+=10) for (let x=366+((y/10)%2)*6;x<472;x+=12) glyph(c,"#743a72",HEART,x,y);
+  rect(c,"#e8a0c8",362,50,112,2);
+  rect(c,"#c870a0",362,70,112,6); rect(c,"#e090b8",362,70,112,1);
+  // portrait with crown
+  rect(c,"#ffcc33",418,18,20,20); rect(c,"#f2c2dc",420,20,16,16); rect(c,"#f0b98a",426,26,4,4); rect(c,"#7a3b2a",425,25,6,2); rect(c,"#e86aa0",424,30,8,6);
+  glyph(c,"#ffcc33",["10101","11111"],426,22);
+  // vanity + mirror + roses
+  rect(c,"#f2e0ec",376,56,24,3); rect(c,"#e0c8d8",378,59,2,11); rect(c,"#e0c8d8",396,59,2,11); rect(c,"#e0c8d8",380,60,16,4);
+  rect(c,"#ffcc33",381,32,14,22); rect(c,"#b8c8e8",383,34,10,18); rect(c,"#e0ecff",384,35,2,6);
+  rect(c,"#2e7f3e",398,49,1,7); rect(c,"#2e7f3e",401,50,1,6); rect(c,"#ff3a5a",397,47,3,3); rect(c,"#ff3a5a",400,48,3,3); rect(c,"#c8c8e8",396,53,7,3);
+  // loveseat
+  rect(c,"#e86aa0",440,52,30,8); rect(c,"#f08ab8",442,53,26,2); rect(c,"#d0508a",438,58,34,9); rect(c,"#e86aa0",437,56,4,10); rect(c,"#e86aa0",469,56,4,10);
+  glyph(c,"#ff3a5a",["1010","1111","0110"],446,56); glyph(c,"#ffffff",["1010","1111","0110"],458,56);
+  rect(c,"#8a3a6a",440,66,2,4); rect(c,"#8a3a6a",468,66,2,4);
+  doorWall(c,474,11,70,"#4a3f78","#5c4f90");
+
+  /* ---------- ALUMNI ROOM (477..560) ---------- */
+  rect(c,"#1f2c55",477,11,83,59);
+  rect(c,"#3a2414",477,54,83,16); rect(c,"#5a3a24",477,54,83,2);
+  rect(c,"#3a2414",477,70,83,6); rect(c,"#5a3a24",477,70,83,1);
+  // composite wall
+  for (let row=0; row<3; row++) for (let col=0; col<4; col++){
+    const x = 482+col*12, y = 16+row*12;
+    rect(c,"#c78a2b",x,y,10,9); rect(c,"#141a33",x+1,y+1,8,7);
+    for (let k=0;k<3;k++){ rect(c,"#f0b98a",x+2+k*2,y+3,1,1); rect(c,"#f0b98a",x+2+k*2,y+5,1,1); }
+  }
+  // trophy case
+  rect(c,"#5a3a24",532,22,24,32); rect(c,"#2c3f78",534,24,20,28); rect(c,"#5a3a24",534,37,20,1);
+  [[537,29],[545,30],[541,43],[549,44]].forEach(([x,y]) => { rect(c,"#ffcc33",x,y,4,3); rect(c,"#ffcc33",x+1,y+3,2,2); rect(c,"#c78a2b",x,y+5,4,2); });
+  rect(c,"#a0b4ff",535,25,1,10);
+  // plaque
+  rect(c,"#c78a2b",500,56,16,8); rect(c,"#3a2414",501,57,14,6); rect(c,"#ffcc33",503,59,10,1); rect(c,"#ffcc33",503,61,7,1);
+
+  /* ---------- STAIRWELL A (560..608) down to basement ---------- */
+  rect(c,"#1a1530",560,11,48,123);
+  for (let y=14;y<134;y+=6) rect(c,"#201a3a",560,y,48,1);
+  rect(c,"#3a2d5a",560,70,48,1);
+  for (let x=560;x<608;x+=4){ const y = Math.round(70 + (x-560)*64/48); rect(c,"#7a5232",x,y,4,138-y); rect(c,"#a07040",x,y,4,1); }
+  for (let x=560;x<608;x+=2){ const y = Math.round(70 + (x-560)*64/48) - 10; rect(c,"#c78a2b",x,y,2,1); }
+  for (let x=562;x<608;x+=10){ const y = Math.round(70 + (x-560)*64/48); rect(c,"#c78a2b",x,y-10,1,10); }
+  // basement ceiling slab
+  rect(c,"#4a4a56",608,70,96,10); rect(c,"#5a5a68",608,70,96,1);
+
+  /* ---------- BASEMENT (608..704, 80..134) ---------- */
+  rect(c,"#3b3a47",608,80,96,54);
+  for (let y=80;y<134;y+=5){ rect(c,"#33323e",608,y,96,1); for (let x=608+((y/5)%2)*6;x<704;x+=12) rect(c,"#33323e",x,y,1,5); }
+  rect(c,"#5a5a64",608,134,96,4); rect(c,"#6a6a74",608,134,96,1);
+  rect(c,"#b8733a",608,82,96,2); rect(c,"#8a5428",608,84,96,1); rect(c,"#b8733a",622,82,2,30); rect(c,"#8a7a6a",690,82,2,18);
+  // furnace
+  rect(c,"#2a2a32",680,100,20,34); rect(c,"#44444f",680,100,20,2); rect(c,"#1a1a20",684,118,12,8); for (let x=684;x<696;x+=2) rect(c,"#3a3a44",x,104,1,10);
+  // washer
+  rect(c,"#e8e8f0",644,116,15,18); rect(c,"#c8c8d8",644,116,15,3); rect(c,"#6a7a9a",647,121,9,9); rect(c,"#9ab0d8",649,123,5,5);
+  // boxes
+  rect(c,"#a07a4a",614,122,14,12); rect(c,"#8a6a3a",614,127,14,1); rect(c,"#b08a5a",616,112,10,10); rect(c,"#8a6a3a",620,112,1,10);
+  rect(c,"#e8e0f0",617,124,6,2);
+  // cobwebs
+  for (let k=0;k<6;k++){ rect(c,"#8a8a9a",609+k,85+k,1,1); rect(c,"#8a8a9a",609,85+k*2,k,1); }
+  for (let k=0;k<6;k++){ rect(c,"#8a8a9a",702-k,85+k,1,1); }
+
+  /* ---------- STAIRWELL B (704..744) down to rat room ---------- */
+  rect(c,"#24202c",704,80,40,118);
+  for (let i=0;i<60;i++) rect(c,"#2e2938",704+Math.floor(R()*40),80+Math.floor(R()*118),2,1);
+  for (let x=704;x<744;x+=4){ const y = Math.round(134 + (x-704)*64/40); rect(c,"#5c5866",x,y,4,202-y); rect(c,"#7a7686",x,y,4,1); }
+  rect(c,"#4a4a56",744,140,96,6);
+
+  /* ---------- RAT ROOM (744..840, 146..198) ---------- */
+  rect(c,"#4d5e4c",744,146,96,52);
+  for (let y=146;y<198;y+=6) rect(c,"#3c4a3b",744,y,96,1);
+  for (let x=744;x<840;x+=6) rect(c,"#3c4a3b",x,146,1,52);
+  for (let i=0;i<40;i++){ rect(c, R()<.5?"#3a4430":"#5a5a3a", 744+Math.floor(R()*96), 160+Math.floor(R()*38), 2, 1); }
+  rect(c,"#3a3a32",744,198,96,4); rect(c,"#4a4a40",744,198,96,1);
+  // sink + cracked mirror
+  rect(c,"#c8c8c0",760,176,14,4); rect(c,"#a8a8a0",765,180,4,18); rect(c,"#8a8a90",766,173,2,3);
+  rect(c,"#8a8a80",759,154,16,16); rect(c,"#6a8088",760,155,14,14); rect(c,"#cfe0e8",766,157,1,1); rect(c,"#cfe0e8",767,158,1,1); rect(c,"#cfe0e8",766,159,1,2); rect(c,"#cfe0e8",768,161,1,1); rect(c,"#cfe0e8",769,162,1,2);
+  // toilet
+  rect(c,"#d8d8d0",818,168,8,16); rect(c,"#b8b8b0",818,168,8,2); rect(c,"#d8d8d0",806,184,18,5); rect(c,"#e8e8e0",806,183,18,1); rect(c,"#b8b8b0",811,189,8,9); rect(c,"#a8a8a0",824,172,2,1);
+  // TP roll, puddle, graffiti
+  rect(c,"#f2f2f2",830,178,3,3); rect(c,"#c8c8c8",831,179,1,1);
+  rect(c,"#5a7a8a",778,198,16,1); rect(c,"#7a9aaa",781,198,4,1);
+  tep(c,"#7a3fe0",786,154); rect(c,"#7a3fe0",786,161,14,1);
+  rect(c,"#2a2420",836,146,4,52);
+  return cv;
+}
+
+// 7x11 brother sprite
+const SPR = ["..HHH..",".HHHHH.",".HSSSH.","..SES..","..SSS..",".PPPPP.","SPPYPPS","S.PPP.S","..PPP..","..L.L..",".BB.BB."];
+const SPR2 = SPR.slice(0,9).concat([".L...L.","BB...BB"]);
+const SPR_COL = {H:"#3b2414",S:"#f0b98a",E:"#1b1100",P:"#8b55ff",Y:"#ffcc33",L:"#2d5aa8",B:"#111"};
+
+const SCN = { cv:null, ctx:null, score:0, cam:null, anim:null, raf:0, face:1, lastRoom:null, sparkleUntil:0, onDone:null };
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+function camTarget(p){ return { x: clamp(p.x - 54, 0, WW - VW), y: clamp(p.y - 58, 0, WH - VH) }; }
+
+function sceneHTML(){
+  return `<div class="scene">
+    <canvas id="scn" width="${VW}" height="${VH}" aria-label="Pixel frat house: your run through the house"></canvas>
+    <div class="ov-room" id="ovRoom"></div>
+    <div class="ov-score" id="ovScore"></div>
+    <div class="ov-banner" id="ovBanner"></div>
+    <div class="ov-float" id="ovFloat"></div>
+  </div><div class="where" id="where"></div>`;
+}
+function setWhere(score){
+  const el = $("#where"); if (!el) return;
+  const n = nextRoom(score);
+  el.innerHTML = `<span class="here">DEPTH ${String(Math.round(score)).padStart(3,"0")}/${MAX}</span><span class="next">${n ? `NEXT: ${esc(n.room.toUpperCase())} @ ${roomPts(n)}` : "THE BOTTOM. YOU MADE IT."}</span>`;
+}
+function setOverlays(score){
+  const r = $("#ovRoom"), s = $("#ovScore");
+  if (r) r.textContent = roomAt(score).room.toUpperCase();
+  if (s) s.textContent = String(Math.round(score)).padStart(3,"0");
+}
+function showBanner(room){
+  const b = $("#ovBanner"); if (!b) return;
+  b.innerHTML = `<small>ENTERING</small>${esc(room.toUpperCase())}`;
+  b.classList.remove("show"); void b.offsetWidth; b.classList.add("show");
+}
+function showFloat(text, cls){
+  const f = $("#ovFloat"); if (!f) return;
+  f.textContent = text; f.className = "ov-float " + (cls||"");
+  void f.offsetWidth; f.classList.add("show");
+}
+
+function drawFrame(now){
+  const c = SCN.ctx, cv = SCN.cv;
+  if (!WORLD) WORLD = buildWorld();
+  // score along path
+  let s = SCN.score, walking = false;
+  if (SCN.anim){
+    const a = SCN.anim, t = clamp((now - a.t0) / a.dur, 0, 1);
+    if (t > 0) walking = t < 1;
+    const e = t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2;
+    s = a.from + (a.to - a.from) * e;
+    SCN.score = s;
+    const rm = roomAt(s).room;
+    if (rm !== SCN.lastRoom){ SCN.lastRoom = rm; showBanner(rm); }
+    setOverlays(s); setWhere(s);
+    if (t >= 1){ SCN.anim = null; SCN.score = a.to; if (a.big) SCN.sparkleUntil = now + 1400; const cb = SCN.onDone; SCN.onDone = null; if (cb) cb(); }
+  }
+  const p = posAt(s), pa = posAt(s + 2);
+  if (walking) SCN.face = (pa.x - p.x) < -0.01 ? -1 : 1;
+  // camera
+  const tgt = camTarget(p);
+  if (!SCN.cam) SCN.cam = {x:tgt.x, y:tgt.y};
+  SCN.cam.x += (tgt.x - SCN.cam.x) * 0.14; SCN.cam.y += (tgt.y - SCN.cam.y) * 0.14;
+  const cx = Math.round(SCN.cam.x), cy = Math.round(SCN.cam.y);
+  c.clearRect(0,0,VW,VH);
+  c.drawImage(WORLD, cx, cy, VW, VH, 0, 0, VW, VH);
+  const R = (col,x,y,w,h) => rect(c,col,Math.round(x-cx),Math.round(y-cy),w,h);
+  const T = now/1000;
+  const glow = (x,y,r,rgb,a) => { const gx=x-cx, gy=y-cy, g=c.createRadialGradient(gx,gy,0,gx,gy,r); g.addColorStop(0,`rgba(${rgb},${a})`); g.addColorStop(1,`rgba(${rgb},0)`); c.fillStyle=g; c.fillRect(gx-r,gy-r,r*2,r*2); };
+
+  // ---- live props ----
+  // porch light glow
+  glow(108,41,14,"255,204,51",.35 + .08*Math.sin(T*5));
+  // basketball bounce
+  { const ph = (T*1.1) % 2, bx = 182 + (ph < 1 ? ph : 2-ph) * 24, by = 65 - Math.abs(Math.sin(T*5.2)) * 16;
+    R("#ff8a2a",bx,by,4,4); R("#b8521a",bx+1.5,by,1,4); R("#b8521a",bx,by+1.5,4,1); R("rgba(0,0,0,.35)",bx,69,4,1); }
+  // lamp glow + mug steam
+  glow(297,46,22,"240,208,128",.32 + .05*Math.sin(T*2));
+  for (let k=0;k<3;k++){ const ph = (T*0.8 + k/3) % 1; R("rgba(230,230,240,"+(0.8-ph*0.8)+")", 301 + Math.round(Math.sin(ph*9+k)*1.5), 56 - ph*10, 1, 1); }
+  // floating hearts
+  for (let k=0;k<4;k++){ const ph = (T*0.35 + k/4) % 1, hx = 372 + k*26 + Math.sin(T*2+k)*3, hy = 66 - ph*48;
+    c.globalAlpha = ph < .8 ? 1 : (1-ph)*5; glyph(c, k%2 ? "#ff6a9a" : "#ffb0d0", HEART, Math.round(hx-cx), Math.round(hy-cy)); c.globalAlpha = 1; }
+  // trophy twinkle
+  [[538,29],[546,30],[542,43],[550,44]].forEach(([x,y],k) => { if (Math.sin(T*3+k*1.7) > .85){ R("#ffffff",x+1,y-1,1,1); R("#ffffff",x,y,1,1); R("#ffffff",x+2,y,1,1); } });
+  // swinging bulb
+  { const ang = Math.sin(T*1.6)*0.35, len = 14, bx = 656 + Math.sin(ang)*len, by = 82 + Math.cos(ang)*len;
+    for (let i=0;i<len;i+=1) R("#22222a",656+Math.sin(ang)*i,82+Math.cos(ang)*i,1,1);
+    glow(bx,by+2,26,"255,224,138",.38); R("#ffe08a",bx-1,by,3,3); R("#ffffff",bx,by,1,1); }
+  // furnace flame flicker
+  { const f = Math.random(); R(f>.5?"#ff8a2a":"#ffcc33",685,120,10,2); R("#ff5468",686+Math.floor(f*6),121,3,4); }
+  // rats
+  for (let k=0;k<2;k++){
+    const span = 70, ph = ((T*(k?0.42:0.3)) + k*.5) % 2, dir = ph < 1 ? 1 : -1, rx = 752 + (ph < 1 ? ph : 2-ph) * span, ry = 195;
+    const tail = dir > 0 ? -3 : 5;
+    R("#6a6a72",rx,ry,5,3); R("#7a7a82",rx+1,ry-1,3,1); R("#8a8a92",dir>0?rx+4:rx,ry-1,1,1); R("#ff7a8a",dir>0?rx+5:rx-1,ry+1,1,1);
+    R("#c88a90",rx+tail,ry+2,3,1); R("#111",dir>0?rx+4:rx,ry,1,1);
+    if (Math.floor(T*8)%2) { R("#4a4a52",rx+1,ry+3,1,1); R("#4a4a52",rx+3,ry+3,1,1); }
+  }
+  // drip
+  { const ph = (T*0.9) % 1; R("#8ab0c8",790,147 + ph*50,1,2); if (ph > .96) { R("#8ab0c8",788,197,1,1); R("#8ab0c8",792,197,1,1); } }
+
+  // ---- sprite ----
+  const sp = (walking && Math.floor(now/110)%2) ? SPR2 : SPR, h = sp.length;
+  const bob = (!walking && Math.floor(now/500)%2) ? 1 : 0;
+  const ox = Math.round(p.x - cx) - 3, oy = Math.round(p.y - cy) - h + 1 + bob;
+  rect(c,"rgba(0,0,0,.45)",ox+1,Math.round(p.y-cy)+1,5,1);
+  sp.forEach((row,j)=>{ for (let i=0;i<7;i++){ const ch = row[SCN.face<0 ? 6-i : i]; if (ch !== ".") rect(c, SPR_COL[ch], ox+i, oy+j, 1, 1); } });
+  if (now < SCN.sparkleUntil){ for (let k=0;k<8;k++){ const a = T*6 + k*0.785, rr = 7 + Math.sin(T*10+k)*2; rect(c, k%2?"#ffcc33":"#ffffff", Math.round(ox+3+Math.cos(a)*rr), Math.round(oy+5+Math.sin(a)*rr), 1, 1); } }
+
+  // ---- darkness: deeper = darker, flashlight around the brother ----
+  const depth = clamp((p.y - 69) / 128, 0, 1);
+  if (depth > 0.02){
+    let dark = 0.45 + depth * 0.45;
+    if (p.x > 744 && p.y > 160 && Math.random() < 0.04) dark = 0.92;
+    const sx = p.x - cx, sy = p.y - cy - 6;
+    const g = c.createRadialGradient(sx, sy, 8, sx, sy, 46);
+    g.addColorStop(0, "rgba(5,3,15,0)"); g.addColorStop(1, `rgba(5,3,15,${dark})`);
+    c.fillStyle = g; c.fillRect(0,0,VW,VH);
+  }
+}
+function sceneLoop(now){
+  if (!SCN.cv || !document.body.contains(SCN.cv)) { SCN.raf = 0; return; }
+  drawFrame(now);
+  SCN.raf = requestAnimationFrame(sceneLoop);
+}
+// Mount the scene. If fromScore is given, the brother walks from there to score.
+function mountScene(score, fromScore, opts){
+  opts = opts || {};
+  cancelAnimationFrame(SCN.raf);
+  SCN.cv = $("#scn"); if (!SCN.cv) return;
+  SCN.ctx = SCN.cv.getContext("2d"); SCN.ctx.imageSmoothingEnabled = false;
+  const start = fromScore == null ? score : fromScore;
+  SCN.score = start; SCN.anim = null; SCN.cam = null; SCN.lastRoom = roomAt(start).room; SCN.onDone = opts.onDone || null;
+  setOverlays(start); setWhere(start);
+  if (start !== score){
+    const delay = 450, dur = Math.min(3200, 900 + (score - start) * 16);
+    SCN.anim = { from:start, to:score, t0: performance.now() + delay, dur, big: !!opts.big };
+    if (opts.floatText) setTimeout(() => showFloat(opts.floatText, opts.floatCls), 150);
+  } else if (opts.floatText) showFloat(opts.floatText, opts.floatCls);
+  SCN.raf = requestAnimationFrame(sceneLoop);
+}
+
+/* ---------- admin (for hosting outside Claude, e.g. GitHub Pages) ----------
+   Visit yoursite/#admin once on your own phone/laptop to unlock the reset
+   button and schedule view on that device. Visit #noadmin to lock it again. */
+if (location.hash === "#admin"){ store.set("tepillion:admin", true); history.replaceState(null, "", location.pathname + location.search); }
+if (location.hash === "#noadmin"){ store.set("tepillion:admin", false); history.replaceState(null, "", location.pathname + location.search); }
+const ADMIN = store.get("tepillion:admin") === true;
+const canAdmin = () => SH.isOwner === true || (!SH.user && ADMIN);
+
+/* ---------- state ---------- */
+const TODAY = todayET();
+const NUM = Math.max(0, dayIndex(TODAY)) + 1;
+const QS = questionsFor(TODAY);
+MAX = Math.max(100, QS.length * 100);
+const KEY = "tepillion:v1:" + TODAY;
+let S = store.get(KEY) || {results:[], pending:null, done:false};
+let timerRAF = null, phase = "home";
+
+function total(st){ return (st.results||[]).reduce((s,r)=>s+(TIERS[r.tier]||TIERS[0]).pts,0); }
+function save(){ store.set(KEY, S); }
+
+/* ---------- shared (leaderboard) ---------- */
+const SH = { mode:"claude", db:null, user:null, me:null, plays:[], names:{}, status:"loading", canWrite:true, isOwner:null };
+
+/* ----- Firebase (Firestore REST) backend, used when hosted on GitHub Pages etc. ----- */
+const FBX = {
+  base(){ return `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(FIREBASE.projectId)}/databases/(default)/documents`; },
+  key(){ return "key=" + encodeURIComponent(FIREBASE.apiKey); },
+  enc(v){ if (v === null || v === undefined) return {nullValue:null}; if (typeof v === "string") return {stringValue:v};
+    if (typeof v === "number") return Number.isInteger(v) ? {integerValue:String(v)} : {doubleValue:v};
+    if (typeof v === "boolean") return {booleanValue:v}; if (Array.isArray(v)) return {arrayValue:{values:v.map(FBX.enc)}};
+    return {mapValue:{fields:FBX.encObj(v)}}; },
+  encObj(o){ const f = {}; for (const k in o) f[k] = FBX.enc(o[k]); return f; },
+  dec(v){ if (!v) return null; if ("stringValue" in v) return v.stringValue; if ("integerValue" in v) return +v.integerValue; if ("doubleValue" in v) return v.doubleValue;
+    if ("booleanValue" in v) return v.booleanValue; if ("nullValue" in v) return null; if ("arrayValue" in v) return (v.arrayValue.values||[]).map(FBX.dec);
+    if ("mapValue" in v) return FBX.decObj(v.mapValue.fields||{}); return null; },
+  decObj(f){ const o = {}; for (const k in f) o[k] = FBX.dec(f[k]); return o; }
+};
+const playerName = () => (store.get("tepillion:name") || "").trim();
+function postedKey(){ return "tepillion:posted:" + TODAY; }
+let fbBusy = false;
+async function fbLoad(){
+  if (fbBusy) return; fbBusy = true;
+  try {
+    const r = await fetch(`${FBX.base()}/days/${TODAY}/plays?pageSize=300&${FBX.key()}`);
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    SH.plays = (j.documents || []).map(d => ({ id: d.name.split("/").pop(), data: { days: { [TODAY]: FBX.decObj(d.fields || {}) } } }));
+    SH.status = "on";
+  } catch(e){ SH.status = SH.plays.length ? "slow" : "err"; }
+  fbBusy = false;
+  refreshBoard();
+}
+async function fbSave(){
+  const name = playerName(); if (!name) return;
+  const sig = JSON.stringify([name, S.results.map(r => r.tier)]);
+  if (store.get(postedKey()) === sig) return false;
+  const doc = { name: name.slice(0,24), score: total(S), tiers: S.results.map(r => r.tier), answers: S.results.map(r => r.display || ""), at: Date.now() };
+  const r = await fetch(`${FBX.base()}/days/${TODAY}/plays/${SH.me}?${FBX.key()}`, { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({fields: FBX.encObj(doc)}) });
+  if (!r.ok) throw new Error("HTTP " + r.status);
+  store.set(postedKey(), sig);
+  return true;
+}
+function initFirebase(){
+  SH.mode = "fb";
+  SH.me = store.get("tepillion:pid");
+  if (!SH.me){ SH.me = Array.from({length:16}, () => Math.floor(Math.random()*16).toString(16)).join(""); store.set("tepillion:pid", SH.me); }
+  fbLoad();
+  setInterval(() => { if (phase === "res" && !document.hidden) fbLoad(); }, 30000);
+}
+
+async function getClaude(){
+  for (let i=0;i<40;i++){ if (window.claude && typeof window.claude.use === "function") return window.claude; await new Promise(r=>setTimeout(r,250)); }
+  return null;
+}
+async function initShared(){
+  if (FB_ON) return initFirebase();
+  if (STANDALONE){ SH.mode = "off"; SH.status = "off"; refreshBoard(); return; }
+  const c = await getClaude();
+  if (!c){ SH.status = "off"; refreshBoard(); return; }
+  try {
+    const [user, db] = await Promise.all([c.use("user"), c.use("db")]);
+    SH.user = user; SH.db = db;
+    if (user){ try { SH.isOwner = await user.isOwner(); } catch(e){} }
+    if (!db || !user){ SH.status = "off"; refreshBoard(); rerenderOwnerBits(); return; }
+    SH.me = await user.id();
+    try { const cw = await user.can("data.write"); if (cw === false) SH.canWrite = false; } catch(e){}
+    const timeout = setTimeout(()=>{ if (SH.status==="loading"){ SH.status="slow"; refreshBoard(); } }, 10000);
+    db.collection("plays").onSnapshot(snap => {
+      SH.plays = snap.docs.map(d => ({id:d.id, data:d.data()||{}}));
+      if (!snap.metadata.fromCache) clearTimeout(timeout);
+      SH.status = "on";
+      adoptRemote(); resolveNames(); refreshBoard();
+    }, () => { clearTimeout(timeout); SH.status = "off"; refreshBoard(); });
+    rerenderOwnerBits();
+  } catch(e){ SH.status = "off"; refreshBoard(); }
+}
+function rerenderOwnerBits(){
+  if (location.hash === "#schedule") renderSchedule();
+  else { const slot = $("#ownerSlot"); if (slot){ slot.innerHTML = ownerLink(); wireOwner(); } }
+}
+function todaysPlays(){
+  return SH.plays.map(p => ({id:p.id, day:(p.data.days||{})[TODAY]})).filter(p => p.day && typeof p.day.score === "number");
+}
+function adoptRemote(){
+  if (SH.mode !== "claude" || !SH.me || S.done || Date.now() < (SH.resetUntil||0)) return;
+  const mine = SH.plays.find(p => p.id === SH.me);
+  const day = mine && (mine.data.days||{})[TODAY];
+  if (day && Array.isArray(day.tiers)){
+    S = {done:true, pending:null, results: day.tiers.map((t,i)=>({tier:t, display:(day.answers||[])[i]||null, input:(day.inputs||[])[i]||"", tries:[]}))};
+    save(); if (phase === "home") render();
+  }
+}
+let savingShared = false;
+async function saveShared(){
+  if (SH.mode === "fb"){
+    if (!S.done || savingShared || !playerName()) return;
+    savingShared = true;
+    try { const posted = await fbSave(); savingShared = false; if (posted) fbLoad(); }
+    catch(e){ savingShared = false; SH.postErr = true; refreshBoard(); }
+    return;
+  }
+  if (!SH.db || !SH.me || !S.done || !SH.canWrite || savingShared) return;
+  const mine = SH.plays.find(p => p.id === SH.me);
+  if (mine && (mine.data.days||{})[TODAY]) return;
+  savingShared = true;
+  try {
+    const ref = SH.db.doc("plays/" + SH.me);
+    const snap = await ref.get();
+    const days = Object.assign({}, snap.exists ? ((snap.data()||{}).days || {}) : {});
+    days[TODAY] = { score: total(S), tiers: S.results.map(r=>r.tier), answers: S.results.map(r=>r.display||null), inputs: S.results.map(r=>(r.input||"").slice(0,60)), at: Date.now() };
+    const trimmed = {}; Object.keys(days).sort().slice(-90).forEach(k => trimmed[k] = days[k]);
+    await ref.set({ days: trimmed });
+  } catch(e){ SH.canWrite = false; refreshBoard(); }
+  savingShared = false;
+}
+let nameReq = false;
+async function resolveNames(){
+  if (!SH.user || nameReq) return;
+  const ids = todaysPlays().map(p=>p.id).filter(id => !(id in SH.names));
+  if (!ids.length) return;
+  nameReq = true;
+  try { const ps = await SH.user.profiles(ids); ids.forEach(id => SH.names[id] = (ps && ps[id] && ps[id].name) || ""); } catch(e){}
+  nameReq = false; refreshBoard();
+}
+function boardHTML(limit, popup){
+  let pre = "";
+  if (!popup && SH.mode === "fb" && S.done && !playerName()){
+    pre = `<form id="nameForm" class="nameform"><p>Put your name on today's board:</p>
+      <div class="row"><input type="text" id="nameIn" maxlength="24" placeholder="your name_" autocomplete="off" autocapitalize="words"><button type="submit" class="gold">POST</button></div></form>`;
+  }
+  if (!popup && SH.mode === "fb" && SH.postErr) pre += `<p class="small" style="color:var(--red)">Couldn't post your score. Try again in a minute.</p>`;
+  if (SH.status === "err") return pre + `<p class="muted small">Couldn't load the leaderboard. Check your connection.</p>${popup ? "" : `<button class="link" id="boardRetry">↻ TRY AGAIN</button>`}`;
+  if (SH.status === "loading") return pre + `<p class="muted">LOADING<span class="blink">_</span></p>`;
+  if (SH.status === "off") return `<p class="muted small">The chapter leaderboard shows up when you open TEPillion signed in to Claude with access to this page. You can still play. Your run is saved on this device.</p>`;
+  const rows = todaysPlays().sort((a,b)=>b.day.score-a.day.score || (a.day.at||0)-(b.day.at||0));
+  let h = pre;
+  if (SH.status === "slow") h += `<p class="muted small">Can't reach the leaderboard right now. It may be out of date.</p>`;
+  if (!rows.length) h += `<p class="muted small">Nobody's on the board yet today.${S.done ? "" : " Be first."}</p>`;
+  else h += `<div>` + rows.slice(0, limit || 25).map((r,i) => {
+    const nm = r.day.name || SH.names[r.id] || "A brother";
+    const grid = (r.day.tiers||[]).map(t => (TIERS[t]||TIERS[0]).emoji).join("");
+    const open = S.done && BOPEN.has(r.id);
+    const row = `<div class="brow ${r.id===SH.me?"me":""} ${S.done?"click":""} ${open?"open":""}" data-pid="${esc(r.id)}" ${S.done?`role="button" tabindex="0" aria-expanded="${open}"`:""}><span class="rank">${i+1}</span><span class="who"><span class="nm">${esc(nm)}${r.id===SH.me?" (you)":""}</span>${S.done?`<span class="mini">${grid}</span>`:""}</span><span class="sc">${r.day.score}${S.done?`<span class="caret">${open?"▲":"▼"}</span>`:""}</span></div>`;
+    if (!open) return row;
+    const ans = r.day.answers || [], tiers = r.day.tiers || [];
+    return row + `<div class="theirs">${QS.map((q,k) => {
+      const tier = tiers[k] || 0, a = ans[k];
+      return `<div class="trow"><div class="grow"><div class="q">${esc(q.cat)} · ${esc(q.prompt)}</div><div class="a">${a ? esc(a) : `<span class="muted">Time's up</span>`}</div></div>${tierChip(tier)}</div>`;
+    }).join("")}</div>`;
+  }).join("") + `</div>`;
+  if (!SH.canWrite && S.done) h += `<p class="muted small" style="margin-top:8px">Your run is saved on this device, but your access can't post to the shared board. Ask the page owner to invite you as an Editor.</p>`;
+  if (SH.mode === "fb" && !popup) h += `<div style="text-align:center;margin-top:6px"><button class="link" id="boardRetry">↻ REFRESH</button>${playerName() ? ` <button class="link" id="renameBtn">CHANGE NAME</button>` : ""}</div>`;
+  return h;
+}
+function refreshBoard(){
+  const el = $("#board");
+  const keepTyping = document.activeElement && document.activeElement.id === "nameIn";
+  if (el && !keepTyping){ el.innerHTML = boardHTML(); wireBoard(); }
+  const tb = $("#topBoard"); if (tb && !keepTyping){ tb.innerHTML = topPopupHTML(); wireBoard(); }
+  const bp = $("#boardPanel"); if (bp) bp.style.display = SH.status === "off" ? "none" : "";
+  if (phase === "res") renderMine();
+  if (S.done) saveShared();
+}
+const BOPEN = new Set();
+function wireBoard(){
+  document.querySelectorAll(".brow.click").forEach(row => {
+    const go = () => { const id = row.dataset.pid; BOPEN.has(id) ? BOPEN.delete(id) : BOPEN.add(id); refreshBoard(); };
+    row.onclick = go;
+    row.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } };
+  });
+  const f = $("#nameForm");
+  if (f) f.onsubmit = e => {
+    e.preventDefault();
+    const v = $("#nameIn").value.trim().replace(/\s+/g, " ").slice(0,24);
+    if (!v){ $("#nameIn").classList.remove("shake"); void $("#nameIn").offsetWidth; $("#nameIn").classList.add("shake"); return; }
+    store.set("tepillion:name", v); SH.postErr = false; $("#nameIn").blur(); refreshBoard(); saveShared();
+  };
+  const rb = $("#boardRetry"); if (rb) rb.onclick = () => { SH.postErr = false; if (SH.status === "err") SH.status = "loading"; refreshBoard(); fbLoad(); saveShared(); };
+  const rn = $("#renameBtn"); if (rn) rn.onclick = () => { store.set("tepillion:name", ""); refreshBoard(); setTimeout(() => { const i = $("#nameIn"); if (i) i.focus(); }, 30); };
+}
+function othersSaid(i, display){
+  if (!display) return null;
+  const others = todaysPlays().filter(p => p.id !== SH.me);
+  if (!others.length) return null;
+  return {same: others.filter(p => (p.day.answers||[])[i] === display).length, of: others.length};
+}
+
+/* ---------- screens ---------- */
+function tierChip(t){ const T = TIERS[t]||TIERS[0]; return `<span class="chip c${T.n}">${T.emoji} ${esc(T.name.toUpperCase())}</span>`; }
+function ownerLink(){
+  if (!canAdmin()) return "";
+  const started = S.done || S.results.length || S.pending;
+  return `<div style="text-align:center">${started ? `<button class="link" id="resetBtn" style="color:var(--gold)">↺ RESET MY RUN (OWNER ONLY)</button><br>` : ""}<button class="link" id="schedBtn">QUESTION BANK &amp; SCHEDULE</button></div>`;
+}
+function wireOwner(){
+  const b = $("#schedBtn"); if (b) b.onclick = () => { location.hash = "schedule"; };
+  const r = $("#resetBtn");
+  if (r) r.onclick = () => {
+    if (!r.dataset.armed){ r.dataset.armed = "1"; r.textContent = "TAP AGAIN TO WIPE TODAY'S RUN"; setTimeout(()=>{ if (r.isConnected){ delete r.dataset.armed; r.textContent = "↺ RESET MY RUN (OWNER ONLY)"; } }, 4000); return; }
+    resetRun();
+  };
+}
+async function resetRun(){
+  cancelAnimationFrame(timerRAF);
+  SH.resetUntil = Date.now() + 5000;
+  S = {results:[], pending:null, done:false}; save();
+  store.set(postedKey(), null);
+  renderHome();
+  if (SH.db && SH.me){
+    try {
+      const ref = SH.db.doc("plays/" + SH.me), snap = await ref.get();
+      if (snap.exists){ const days = Object.assign({}, (snap.data()||{}).days || {}); delete days[TODAY]; await ref.set({days}); }
+    } catch(e){}
+  }
+}
+
+function renderHome(){
+  phase = "home";
+  const started = S.results.length > 0 || S.pending;
+  $("#app").innerHTML = `
+    <div class="panel flush pop">
+      ${sceneHTML()}
+      <div class="body">
+        <div class="lbl">DAILY RUN #${NUM}</div>
+        <h1>${QS.length} PROMPTS. ${SECS} SECONDS EACH. RARE ANSWERS TAKE YOU DEEPER INTO THE HOUSE.</h1>
+        <p class="muted">Same prompts for every brother today. Guess as many times as you want until the clock runs out. Your first answer that's on the sheet locks in, and obvious ones barely move you. Run out of time and you get zero. A perfect ${MAX} takes you all the way down to the Rat Room.</p>
+        <div class="tiers">${TIERS.slice(1).reverse().map(T=>`<div class="tier"><span class="chip c${T.n}">${T.emoji} ${esc(T.name.toUpperCase())}</span><span class="pts">+${T.pts}</span></div>`).join("")}</div>
+        <div style="margin-top:18px">
+          ${FB_ON && !playerName() ? `<div class="nameform"><p>Your name for the leaderboard (you only do this once):</p><input type="text" id="homeName" maxlength="24" placeholder="first and last name_" autocomplete="off" autocapitalize="words"><div class="nope" id="homeNope"></div></div>` : ""}
+          ${QS.length ? `<button class="full gold" id="go">${started ? "▶ CONTINUE" : "▶ PRESS START"}</button>` : `<p>No questions in the bank yet.</p>`}
+        </div>
+      </div>
+    </div>
+    <div id="ownerSlot">${ownerLink()}</div>`;
+  const go = $("#go");
+  if (go) go.onclick = () => {
+    const hn = $("#homeName");
+    if (hn){
+      const v = hn.value.trim().replace(/\s+/g, " ").slice(0,24);
+      if (!v){ $("#homeNope").textContent = "ENTER YOUR NAME FIRST"; hn.classList.remove("shake"); void hn.offsetWidth; hn.classList.add("shake"); hn.focus(); return; }
+      store.set("tepillion:name", v);
+    }
+    startOrResume();
+  };
+  const hn = $("#homeName"); if (hn) hn.onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); go.click(); } };
+  wireOwner();
+  mountScene(total(S));
+}
+
+function startOrResume(){
+  if (S.done) return renderResults();
+  const i = S.results.length;
+  if (S.pending && S.pending.idx === i){
+    if (S.pending.deadline - Date.now() <= 0){ phase = "q"; finishQuestion("", null, true, S.pending.tries || []); return; }
+    return renderQuestion(i, S.pending.deadline);
+  }
+  const deadline = Date.now() + SECS*1000;
+  S.pending = {idx:i, deadline}; save();
+  renderQuestion(i, deadline);
+}
+
+function renderQuestion(i, deadline){
+  phase = "q";
+  const q = QS[i];
+  $("#app").innerHTML = `
+    <div class="panel flush pop">
+      <div class="hud"><span>Q ${i+1}/${QS.length}</span><span class="secs" id="secs">${SECS}</span><span class="score">${String(total(S)).padStart(3,"0")} PTS</span></div>
+      ${sceneHTML()}
+      <div class="body">
+        <span class="cat">${esc(q.cat.toUpperCase())}</span>
+        <div class="prompt">${esc(q.prompt)}</div>
+        <div class="timer" id="timer"><b id="bar"></b></div>
+        <form id="f" autocomplete="off">
+          <div class="row">
+            <input type="text" id="ans" placeholder="guess_" autocomplete="off" autocapitalize="words" autocorrect="off" spellcheck="false" enterkeyhint="send" maxlength="60">
+            <button type="submit" class="gold">GO</button>
+          </div>
+        </form>
+        <div class="nope" id="nope"></div>
+        <div class="tries" id="tries"></div>
+      </div>
+    </div>`;
+  mountScene(total(S));
+  const inp = $("#ans"); setTimeout(()=>inp.focus(), 30);
+  const tries = (S.pending && S.pending.tries) || [];
+  const drawTries = () => { $("#tries").innerHTML = tries.map(x => `<span>${esc(x)}</span>`).join(""); };
+  drawTries();
+  const nope = (msg) => { const n = $("#nope"); n.textContent = msg; inp.classList.remove("shake"); void inp.offsetWidth; inp.classList.add("shake"); };
+  $("#f").onsubmit = e => {
+    e.preventDefault();
+    const v = inp.value.trim(); if (!v) return nope("");
+    const hit = match(q, v);
+    if (hit && hit.amb){ nope(`MORE THAN ONE ${q.names ? "PERSON" : "MATCH"}. BE MORE SPECIFIC!`); inp.select(); return; }
+    if (hit) return finishQuestion(v, hit, false, tries.slice());
+    if (tries.some(x => norm(x) === norm(v))) { nope("ALREADY TRIED THAT"); inp.select(); return; }
+    tries.push(v.slice(0,40)); if (S.pending){ S.pending.tries = tries; save(); }
+    drawTries(); inp.value = ""; nope("✗ NOT ON THE SHEET. KEEP GUESSING!");
+    showFloat("✗", "bad");
+  };
+  const bar = $("#bar"), secs = $("#secs"), tm = $("#timer");
+  cancelAnimationFrame(timerRAF);
+  const tick = () => {
+    const left = Math.max(0, deadline - Date.now());
+    bar.style.width = (Math.ceil(left/(SECS*1000)*40)/40*100) + "%";
+    secs.textContent = String(Math.ceil(left/1000)).padStart(2,"0");
+    tm.classList.toggle("low", left < 6000);
+    if (left <= 0){ const v = inp.value.trim(), m0 = v ? match(q, v) : null, hit = m0 && !m0.amb ? m0 : null; finishQuestion(hit ? v : "", hit, !hit, tries.slice()); return; }
+    timerRAF = requestAnimationFrame(tick);
+  };
+  timerRAF = requestAnimationFrame(tick);
+}
+
+function finishQuestion(input, hit, timedOut, tries){
+  cancelAnimationFrame(timerRAF);
+  if (phase !== "q") return;
+  const before = total(S);
+  const i = S.results.length;
+  const r = {input, display: hit ? hit.display : null, tier: hit ? hit.tier : 0, timedOut, tries: (tries||[]).slice(0,30)};
+  S.results.push(r); S.pending = null;
+  if (S.results.length >= QS.length) S.done = true;
+  save();
+  if (S.done) saveShared();
+  renderFeedback(i, r, before);
+}
+
+function renderFeedback(i, r, before){
+  phase = "fb";
+  const q = QS[i], T = TIERS[r.tier];
+  const rare = q.answers.filter(a => a.tier >= 4 && a.display !== r.display).slice(0,4).map(a=>a.display);
+  const last = i === QS.length - 1;
+  let msg;
+  if (r.tier) msg = `<div class="answer">${esc(r.display)}</div>${r.input && norm(r.input)!==norm(r.display) ? `<p class="muted small">You typed “${esc(r.input)}”</p>` : ""}`;
+  else msg = `<p class="muted">TIME'S UP!</p>`;
+  const nt = (r.tries||[]).length;
+  if (nt) msg += `<p class="muted small">${nt} miss${nt===1?"":"es"} first: ${r.tries.map(esc).join(", ")}</p>`;
+  $("#app").innerHTML = `
+    <div class="panel flush pop">
+      <div class="hud"><span>Q ${i+1}/${QS.length}</span><span></span><span class="score">${String(total(S)).padStart(3,"0")} PTS</span></div>
+      ${sceneHTML()}
+      <div class="body">
+        <span class="cat">${esc(q.cat.toUpperCase())}</span>
+        <p class="muted" style="margin-bottom:6px">${esc(q.prompt)}</p>
+        <div class="verdict">
+          ${tierChip(r.tier)}
+          <div class="gain">+${T.pts}</div>
+          ${msg}
+        </div>
+        ${rare.length ? `<p class="sheet">Deep cuts on the sheet: ${rare.map(esc).join(" · ")}</p>` : ""}
+        <button class="full gold" id="next" style="margin-top:14px">${last ? "▶ SEE RESULTS" : "▶ NEXT PROMPT"}</button>
+      </div>
+    </div>`;
+  mountScene(total(S), before, { floatText: r.tier ? "+" + T.pts : "TIME'S UP", floatCls: r.tier ? "" : "bad", big: r.tier >= 4 });
+  const nx = $("#next"); nx.focus();
+  nx.onclick = () => last ? renderResults() : startOrResume();
+}
+
+function shareText(){
+  const sc = total(S);
+  return `TEPillion #${NUM} · ${sc}/${MAX} · made it to the ${roomAt(sc).room}\n` + S.results.map(r => TIERS[r.tier].emoji).join("");
+}
+function renderResults(){
+  phase = "res";
+  const sc = total(S), rm = roomAt(sc).room;
+  const quips = {
+    "Outside":"Never made it past the front door. Rush again tomorrow.",
+    "Basketball Court":"Shooting around on the court. Warm-up run.",
+    "House Dad Room":"Hanging out with House Dad. Respectable.",
+    "Sweetheart Room":"Made it to the Sweetheart Room. Charming.",
+    "Alumni Room":"Up on the composite wall. Legacy energy.",
+    "Basement":"Deep in the basement. Elite run.",
+    "Rat Room":"ALL THE WAY DOWN TO THE RAT ROOM. LEGEND."
+  };
+  $("#app").innerHTML = `
+    <div class="panel flush pop">
+      ${sceneHTML()}
+      <div class="body">
+        <div class="lbl">DAILY RUN #${NUM} · ${esc(niceDate(TODAY).toUpperCase())}</div>
+        <div class="big">${String(sc).padStart(3,"0")}<small> / ${MAX}</small></div>
+        <p>Made it to the <strong style="color:var(--gold)">${esc(rm)}</strong>. ${esc(quips[rm]||"")}</p>
+        <div class="grid">${S.results.map(r => TIERS[r.tier].emoji).join("")}</div>
+        <button class="full gold" id="copy">COPY RESULT</button>
+        <textarea class="share" id="shareTxt" rows="2" readonly></textarea>
+        <p class="muted small" style="margin:12px 0 0;text-align:center">New prompts at midnight Eastern.</p>
+      </div>
+    </div>
+    <div class="panel" id="boardPanel" style="${SH.status==="off" ? "display:none" : ""}"><h2>★ TODAY'S BOARD</h2><div id="board"></div></div>
+    <div class="panel"><h2>YOUR ANSWERS</h2><div id="mine"></div></div>
+    <div id="ownerSlot">${ownerLink()}</div>`;
+  mountScene(sc);
+  renderMine();
+  $("#copy").onclick = async () => {
+    const t = shareText();
+    try { await navigator.clipboard.writeText(t); $("#copy").textContent = "COPIED!"; }
+    catch(e){ const ta = $("#shareTxt"); ta.value = t; ta.style.display = "block"; ta.focus(); ta.select(); $("#copy").textContent = "COPY THE TEXT BELOW"; }
+  };
+  wireOwner();
+  refreshBoard();
+  if (SH.mode === "fb") fbLoad();
+  if (SH.mode !== "off" && !SH.popShown){ SH.popShown = true; setTimeout(showTopPopup, 1400); }
+}
+function topPopupHTML(){
+  const mine = todaysPlays().sort((a,b)=>b.day.score-a.day.score || (a.day.at||0)-(b.day.at||0)).findIndex(r => r.id === SH.me);
+  return boardHTML(10, true) + (mine >= 10 ? `<p class="muted small" style="margin-top:10px;text-align:center">You're #${mine+1} today.</p>` : "");
+}
+function showTopPopup(){
+  if (phase !== "res" || $("#topPop")) return;
+  const d = document.createElement("div");
+  d.id = "topPop"; d.className = "pop-wrap";
+  d.innerHTML = `<div class="panel pop pop-card" role="dialog" aria-label="Today's top 10">
+      <h2>★ TODAY'S TOP 10</h2>
+      <div id="topBoard">${topPopupHTML()}</div>
+      <button class="full gold" id="topClose" style="margin-top:14px">▶ SEE MY RESULTS</button>
+    </div>`;
+  document.body.appendChild(d);
+  wireBoard();
+  const close = () => d.remove();
+  $("#topClose").onclick = close;
+  d.onclick = e => { if (e.target === d) close(); };
+  $("#topClose").focus();
+}
+function renderMine(){
+  const el = $("#mine"); if (!el) return;
+  el.innerHTML = S.results.map((r,i) => {
+    const q = QS[i]; if (!q) return "";
+    const o = othersSaid(i, r.display);
+    const nt = (r.tries||[]).length;
+    const ans = (r.display ? esc(r.display) : `<span class="muted">Time's up</span>`) + (nt ? `<span class="muted small"> · ${nt} miss${nt===1?"":"es"}</span>` : "");
+    const also = o ? `<div class="also">${o.same ? `${o.same} of ${o.of} other brother${o.of===1?"":"s"} said this too` : `Nobody else said this`}</div>` : "";
+    const open = OPEN.has(i);
+    const sheet = open ? `<div class="fullsheet">${[5,4,3,2,1].map(tn => {
+        const list = q.answers.filter(a => a.tier === tn); if (!list.length) return "";
+        return `<div class="ftier">${tierChip(tn)}<div class="fans">${list.map(a => a.display === r.display ? `<b class="mine">★ ${esc(a.display)}${a.note ? ` (${esc(a.note)})` : ""}</b>` : `<span>${esc(a.display)}${a.note ? ` <em class="muted">(${esc(a.note)})</em>` : ""}</span>`).join("")}</div></div>`;
+      }).join("")}</div>` : "";
+    return `<div class="res click ${open?"open":""}" data-i="${i}" role="button" tabindex="0" aria-expanded="${open}">
+      <div class="grow"><div class="q">${esc(q.cat)} · ${esc(q.prompt)}</div><div class="a">${ans}</div>${also}
+      <div class="toggle">${open ? "▲ HIDE ANSWERS" : "▼ SEE ALL ANSWERS"}</div></div>${tierChip(r.tier)}</div>${sheet}`;
+  }).join("");
+  el.querySelectorAll(".res.click").forEach(row => {
+    const go = () => { const i = +row.dataset.i; OPEN.has(i) ? OPEN.delete(i) : OPEN.add(i); renderMine(); };
+    row.onclick = go;
+    row.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); go(); } };
+  });
+}
+const OPEN = new Set();
+
+function renderSchedule(){
+  phase = "sched";
+  if (!canAdmin()){ location.hash = ""; return; }
+  const N = BANK.length, days = N ? Math.floor(N / PER_DAY) : 0;
+  let h = `<div class="panel"><h2>QUESTION BANK</h2>
+    <p>${N} question${N===1?"":"s"} across ${new Set(BANK.map(q=>q.cat)).size} categories. That's ${days} day${days===1?"":"s"} of fresh prompts before any repeat.</p>
+    <p class="muted small">Only you, the page owner, can see this view. It shows the next 14 days so you can check the rotation.</p>
+    <button class="ghost" id="back">◀ BACK</button></div><div class="panel"><h2>UPCOMING</h2>`;
+  for (let d=0; d<14; d++){
+    const date = addDays(TODAY, d), qs = questionsFor(date);
+    h += `<div class="sched"><span style="color:var(--gold)">#${Math.max(0,dayIndex(date))+1} · ${esc(niceDate(date))}</span>${d===0?" (today)":""}<div class="muted small">${qs.map(q=>`[${esc(q.cat)}] ${esc(q.prompt)}`).join("<br>")}</div></div>`;
+  }
+  $("#app").innerHTML = h + `</div>`;
+  $("#back").onclick = () => { location.hash = ""; };
+}
+
+function render(){ S.done ? renderResults() : renderHome(); }
+function route(){ if (location.hash === "#schedule") renderSchedule(); else if (phase === "sched" || phase === "home" || phase === "res") render(); }
+window.addEventListener("hashchange", route);
+
+$("#hdrDate").innerHTML = esc(niceDate(TODAY).toUpperCase()) + "<br>RUN #" + NUM;
+if (location.hash === "#schedule") renderSchedule(); else render();
+initShared();
+})();
+</script>
+</body>
+</html>
